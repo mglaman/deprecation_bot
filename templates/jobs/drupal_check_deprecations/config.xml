@@ -35,7 +35,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command>curl -O https://ftp.drupal.org/files/projects/drupal-8.7.x-dev.tar.gz
-tar -zxf drupal-8.7.x-dev.tar.gz
+tar -xzf drupal-8.7.x-dev.tar.gz
 cd drupal-8.7.x-dev
 
 if [ -n &quot;$ProjectName&quot; ]; then
@@ -44,7 +44,7 @@ if [ -n &quot;$ProjectName&quot; ]; then
     composer require drupal/$ProjectName
 fi
 
-drupal-check -d $CheckPath --format junit &gt; report.xml</command>
+drupal-check -d $CheckPath --format=junit &gt; ../report.xml</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -62,22 +62,14 @@ drupal-check -d $CheckPath --format junit &gt; report.xml</command>
       <healthScaleFactor>1.0</healthScaleFactor>
       <allowEmptyResults>false</allowEmptyResults>
     </hudson.tasks.junit.JUnitResultArchiver>
-    <hudson.plugins.ws__cleanup.WsCleanup plugin="ws-cleanup@0.37">
-      <patterns class="empty-list"/>
-      <deleteDirs>false</deleteDirs>
-      <skipWhenFailed>false</skipWhenFailed>
-      <cleanWhenSuccess>true</cleanWhenSuccess>
-      <cleanWhenUnstable>true</cleanWhenUnstable>
-      <cleanWhenFailure>true</cleanWhenFailure>
-      <cleanWhenNotBuilt>true</cleanWhenNotBuilt>
-      <cleanWhenAborted>true</cleanWhenAborted>
-      <notFailBuild>false</notFailBuild>
-      <cleanupMatrixParent>false</cleanupMatrixParent>
-      <externalDelete></externalDelete>
-      <disableDeferredWipeout>false</disableDeferredWipeout>
-    </hudson.plugins.ws__cleanup.WsCleanup>
   </publishers>
   <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.37">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+      <disableDeferredWipeout>false</disableDeferredWipeout>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
     <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.9"/>
   </buildWrappers>
 </project>

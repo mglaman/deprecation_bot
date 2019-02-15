@@ -27,6 +27,7 @@ jenkins_plugins:
   - ansicolor
   - timestamper
   - ws-cleanup
+  - rebuild
 
 # Jenkins configuration for Nginx.
 jenkins_init_changes:
