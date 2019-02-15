@@ -1,0 +1,108 @@
+---
+jenkins_test_mode: False
+
+drupal_check_version: "1.0.1"
+
+# Firewall configuration.
+firewall_allowed_tcp_ports:
+  - "22"
+  - "443"
+  - "80"
+firewall_disable_ufw: True
+
+# Security configuration.
+security_ssh_permit_root_login: 'yes'
+
+# Jenkins configuration.
+jenkins_admin_username: admin
+# This is set in non-prod.yml for non-prod, and secrets.yml for prod.
+jenkins_admin_password: ''
+
+jenkins_package_state: latest
+
+jenkins_http_port: "8080"
+jenkins_java_options: "-Djenkins.install.runSetupWizard=false -Dorg.apache.commons.jelly.tags.fmt.timeZone=America/New_York"
+jenkins_plugin_timeout: 90
+jenkins_plugins:
+  - ansicolor
+  - timestamper
+  - ws-cleanup
+
+# Jenkins configuration for Nginx.
+jenkins_init_changes:
+  - option: "JENKINS_ARGS"
+    value: "--prefix={{ jenkins_url_prefix }} --httpListenAddress=127.0.0.1"
+  - option: "{{ jenkins_java_options_env_var }}"
+    value: "{{ jenkins_java_options }}"
+
+# Nginx proxy configuration.
+nginx_proxy_vhostname: "deprecationbot.glamanate.com"
+nginx_remove_default_vhost: true
+nginx_extra_http_options: |
+  ignore_invalid_headers off;
+nginx_vhosts:
+  - listen: "80 default_server"
+    server_name: "_"
+    extra_parameters: |
+      return 301 https://$host$request_uri;
+  - listen: "443 ssl default_server"
+    server_name: "{{ nginx_proxy_vhostname }}"
+    extra_parameters: |
+      ssl_certificate /etc/letsencrypt/live/{{ nginx_proxy_vhostname }}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/{{ nginx_proxy_vhostname }}/privkey.pem;
+      ssl_trusted_certificate /etc/letsencrypt/live/{{ nginx_proxy_vhostname }}/fullchain.pem;
+
+      ssl_session_timeout 1d;
+      ssl_session_cache shared:SSL:50m;
+      ssl_session_tickets off;
+
+      ssl_protocols TLSv1.2;
+      ssl_ciphers EECDH+AESGCM:EECDH+AES;
+      ssl_ecdh_curve secp384r1;
+      ssl_prefer_server_ciphers on;
+
+      ssl_stapling on;
+      ssl_stapling_verify on;
+
+      add_header Strict-Transport-Security "max-age=15768000; includeSubdomains; preload";
+      add_header X-Frame-Options DENY;
+      add_header X-Content-Type-Options nosniff;
+
+      location / {
+          include /etc/nginx/proxy_params;
+          proxy_pass          http://localhost:8080;
+          proxy_read_timeout  90s;
+          # Fix potential "It appears that your reverse proxy set up is broken" error.
+          proxy_redirect      http://localhost:8080 {{ nginx_proxy_vhostname }};
+      }
+
+# Certbot configuration.
+certbot_install_from_source: yes
+certbot_repo: https://github.com/certbot/certbot.git
+certbot_version: master
+certbot_keep_updated: yes
+certbot_auto_renew_options: "--quiet --no-self-upgrade --pre-hook 'service nginx stop' --post-hook 'service nginx start'"
+certbot_create_if_missing: yes
+certbot_create_method: standalone
+certbot_admin_email: https@example.com
+certbot_certs:
+  - email: "https@example.com"
+    domains:
+      - "{{ nginx_proxy_vhostname }}"
+certbot_create_standalone_stop_services:
+  - nginx
+
+php_version: '7.2'
+php_enable_webserver: false
+php_packages_extra:
+  - php-zip
+php_memory_limit: "-1"
+
+composer_keep_updated: true
+composer_home_owner: jenkins
+composer_home_group: jenkins
+composer_home_path: "{{ jenkins_home }}/.composer"
+composer_add_to_path: true
+composer_github_oauth_token: 8a7e0ed030421663eafa51b0b4efb6c487e5c1e1
+composer_global_packages:
+  - { name: hirak/prestissimo, release: '^0.3' }

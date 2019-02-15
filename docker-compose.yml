@@ -1,0 +1,14 @@
+---
+version: '3'
+services:
+  jenkins:
+    image: geerlingguy/docker-ubuntu1604-ansible:latest
+    container_name: deprecation_bot
+    ports:
+      - "80"
+      - "443"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - .:/etc/ansible/playbook:rw,delegated
+      - ./jenkins_home:/var/lib/jenkins:rw,delegated
+    privileged: true

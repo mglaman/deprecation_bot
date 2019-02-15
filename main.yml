@@ -1,0 +1,103 @@
+---
+- hosts: jenkins
+  become: yes
+  gather_facts: no
+
+  vars_files:
+    - vars/config.yml
+
+  pre_tasks:
+    # See: https://github.com/geerlingguy/drupal-vm/issues/1245
+    - name: Install Python if it's not available.
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      register: output
+      changed_when: output.stdout != ""
+
+    - action: setup
+      tags: ['always']
+
+    - name: Update apt cache.
+      apt: update_cache=yes cache_valid_time=600
+      tags: ['always']
+
+    - name: Include non-prod override vars when not in production.
+      include_vars: vars/non-prod.yml
+      when: jenkins_test_mode
+
+    - name: Include prod secrets when in production.
+      include_vars: "{{ item }}"
+      with_fileglob:
+        - vars/secrets.yml
+      when: not jenkins_test_mode
+
+    - name: Ensure OpenSSH is installed.
+      apt: 'name="{{ item }}" state=present'
+      with_items:
+        - openssh-server
+        - openssh-client
+
+    - name: Ensure Zip is installed
+      apt:
+        name: zip
+        state: present
+
+  roles:
+    - role: geerlingguy.git
+      tags: ['git']
+
+    - role: geerlingguy.java
+      tags: ['java']
+
+    - role: geerlingguy.jenkins
+      tags: ['jenkins']
+
+    - role: geerlingguy.security
+      tags: ['security']
+      when: not jenkins_test_mode
+
+    - role: geerlingguy.firewall
+      tags: ['firewall', 'security']
+      when: not jenkins_test_mode
+
+    - role: geerlingguy.certbot
+      tags: ['certbot']
+
+    - role: geerlingguy.pip
+      tags: ['pip', 'ssl']
+
+    - role: geerlingguy.nginx
+      tags: ['nginx']
+
+    - role: geerlingguy.php-versions
+      tags: ['php']
+    - role: geerlingguy.php
+      tags: ['php']
+
+    - role: geerlingguy.composer
+      tags: ['php', 'composer']
+
+  tasks:
+    - name: Copy Jenkins job script into place
+      copy:
+        src: templates/project-drupal-check.sh
+        dest: /usr/local/bin/project/drupal-check
+        mode: 0755
+      become: yes
+      become_user: jenkins
+      tags: ['jenkins']
+
+    - name: Copy Jenkins jobs into place.
+      copy:
+        src: templates/jobs
+        dest: /var/lib/jenkins
+      notify: restart jenkins
+      become: yes
+      become_user: jenkins
+      tags: ['jenkins']
+
+    - name: Download Drupal Check
+      get_url:
+        url: "https://github.com/mglaman/drupal-check/releases/download/{{ drupal_check_version }}/drupal-check.phar"
+        dest: /usr/local/bin/drupal-check
+        mode: 0755
+      tags: ['drupalcheck']
