@@ -80,10 +80,8 @@
     - name: Copy Jenkins job script into place
       copy:
         src: templates/project-drupal-check.sh
-        dest: /usr/local/bin/project/drupal-check
+        dest: /usr/local/bin/project-drupal-check
         mode: 0755
-      become: yes
-      become_user: jenkins
       tags: ['jenkins']
 
     - name: Copy Jenkins jobs into place.
