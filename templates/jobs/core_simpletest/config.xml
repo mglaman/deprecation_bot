@@ -1,6 +1,6 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <project>
-  <description>Runs drupal-check against core in core/includes</description>
+  <description>Runs drupal-check against core in core/modules/simpletest</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.29">
@@ -21,7 +21,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>ProjectName=&quot;core&quot; CheckPath=&quot;core/includes&quot; project-drupal-check</command>
+      <command>ProjectName=&quot;core&quot; CheckPath=&quot;core/modules/simpletest&quot; project-drupal-check</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
