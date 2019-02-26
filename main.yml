@@ -16,14 +16,15 @@
     - action: setup
       tags: ['always']
 
-    - name: Update apt cache.
-      apt: update_cache=yes cache_valid_time=600
-      tags: ['always']
-
     - name: Set the java_packages variable (Ubuntu).
       set_fact:
         java_packages:
           - openjdk-8-jdk
+      tags: ['always']
+
+    - name: Update apt cache.
+      apt: update_cache=yes cache_valid_time=600
+      tags: ['always']
 
     - name: Include non-prod override vars when not in production.
       include_vars: vars/non-prod.yml
@@ -51,6 +52,9 @@
       tags: ['git']
 
     - role: geerlingguy.java
+      vars:
+      java_packages:
+        - openjdk-8-jdk
       tags: ['java']
 
     - role: geerlingguy.jenkins
@@ -87,7 +91,7 @@
         src: templates/project-drupal-check.sh
         dest: /usr/local/bin/project-drupal-check
         mode: 0755
-      tags: ['jenkins']
+      tags: ['jenkins', 'drupalcheck']
 
     - name: Copy Jenkins jobs into place.
       copy:
@@ -96,7 +100,7 @@
       notify: restart jenkins
       become: yes
       become_user: jenkins
-      tags: ['jenkins']
+      tags: ['jenkins', 'drupalcheck']
 
     - name: Download Drupal Check
       get_url:
