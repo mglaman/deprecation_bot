@@ -1,7 +1,7 @@
 ---
 jenkins_test_mode: False
 
-drupal_check_version: "1.0.1"
+drupal_check_version: "1.0.3"
 
 # Firewall configuration.
 firewall_allowed_tcp_ports:
