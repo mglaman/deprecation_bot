@@ -103,4 +103,5 @@
         url: "https://github.com/mglaman/drupal-check/releases/download/{{ drupal_check_version }}/drupal-check.phar"
         dest: /usr/local/bin/drupal-check
         mode: 0755
+        force: yes
       tags: ['drupalcheck']
