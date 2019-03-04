@@ -9,4 +9,5 @@ if [[ -n "$ProjectName" && $ProjectName != "core" ]]; then
     composer require drupal/$ProjectName
 fi
 
+echo "Checker: $(drupal-check --version)"
 drupal-check -d $CheckPath --format junit --no-progress > ../report.xml
