@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="PHPStan" failures="2">
+    <testcase name="core/modules/content_moderation/tests/src/Functional/ModerationStateTestBase.php" failures="1" errors="0" tests="1">
+      <failure type="error" message="Call to deprecated method isNewRevision() of class Drupal\node\Entity\NodeType on line 126"></failure>
+    </testcase>
+    <testcase name="core/modules/content_moderation/tests/src/Kernel/ContentModerationStateTest.php" failures="1" errors="0" tests="1">
+      <failure type="error" message="Call to deprecated method getCurrentUserId() of class Drupal\content_moderation\Entity\ContentModerationState on line 684"></failure>
+    </testcase>
+    <testcase name="Generic Failures" failures="0" errors="0" tests="0"/>
+  </testsuite>
+</testsuites>
